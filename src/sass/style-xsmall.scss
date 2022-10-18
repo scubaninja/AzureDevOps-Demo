@@ -1,0 +1,125 @@
+@import 'vars';
+@import 'mixins';
+
+/*
+	Drift by Pixelarity
+	pixelarity.com @pixelarity
+	License: pixelarity.com/license
+*/
+
+/* Basic */
+	
+	html, body {
+		min-width: 320px;
+	}
+
+	body, input, select, textarea {
+		font-size: 12pt;
+	}
+
+/* List */
+
+	ul {
+		&.actions {
+			margin: 0 0 $size-element-margin 0;
+			
+			li {
+				display: block;
+				padding: ($size-element-margin * 0.5) 0 0 0;
+				text-align: center;
+				width: 100%;
+				
+				&:first-child {
+					padding-top: 0;
+				}
+				
+				> * {
+					margin: 0 !important;
+					width: 100%;
+					
+					&.icon {
+						&:before {
+							margin-left: -2em;
+						}
+					}
+				}
+			}
+			
+			&.small {
+				li {
+					padding: ($size-element-margin * 0.25) 0 0 0;
+
+					&:first-child {
+						padding-top: 0;
+					}
+				}
+			}
+		}
+
+		&.menu {
+			font-size: 0.8em;
+			line-height: 2em;
+			
+			li {
+				border: 0;
+				margin: 0;
+				padding: 0 0.5em !important;
+			}
+		}
+	}
+
+/* Button */
+
+	input[type="submit"],
+	input[type="reset"],
+	input[type="button"],
+	.button {
+		padding: 0;
+	}
+
+/* Slider */
+
+	.slider {
+		position: relative;
+
+		.viewer {
+			border-radius: 0 !important;
+			border-width: 0em;
+			margin-left: -5vw;
+			width: 100vw;
+		}
+		
+		.slide {
+			img {
+				border-radius: 0 !important;
+			}
+		}
+		
+		.nav-next,
+		.nav-previous {
+			&:before {
+				font-size: 0.8em;
+			}
+		}
+	}
+	
+/* Banner */
+
+	#banner {
+		padding: 5em 2em 4em 2em;
+	}
+	
+/* CTA */
+
+	#cta {
+		padding: 2em;
+		
+		h2 {
+			display: block;
+			margin: 0 0 1em 0;
+		}
+		
+		.actions {
+			display: block;
+		}
+	}

@@ -1,0 +1,84 @@
+trigger:
+- main
+
+pool:
+    vmImage: 'ubuntu-latest'
+
+variables:
+  IMAGE_REGISTRY_CONNECTION: 'ACR Demo'
+  IMAGE_REGISTRY: 'ADODemo'
+  IMAGE_REPOSITORY: 'adodemo.azurecr.io'
+  TAG: '$(Build.BuildId)'
+
+stages:
+- stage: BuildApp
+  jobs: 
+  - job: BuildPushImage
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: '$(IMAGE_REGISTRY_CONNECTION)'
+        repository: '$(IMAGE_REPOSITORY)'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: '$(TAG)'
+
+- stage: DeployDev
+  jobs: 
+  - job: DeployDev
+    steps:
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'Azure'
+        appType: 'webAppContainer'
+        WebAppName: 'ADODemo-Dev'
+        DockerNamespace: '$(IMAGE_REGISTRY)' 
+        DockerRepository: '$(IMAGE_REPOSITORY)'
+        DockerImageTag: '$(TAG)'
+
+- stage: DeployProdAzure
+  jobs: 
+  - job: ApproveRelease
+    timeoutInMinutes: 4320 # job times out in 3 days
+    pool: server
+    steps:
+    - task: ManualValidation@0
+      timeoutInMinutes: 1440 # task times out in 1 day
+      inputs:
+        notifyUsers: 'nana.janashia@nnsoftware.at'
+        instructions: 'Please validate and approve deployment to prod'
+  - job: DeployProd
+    steps:
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'Azure'
+        appType: 'webAppContainer'
+        WebAppName: 'ADODemo-prod'
+        DockerNamespace: '$(IMAGE_REGISTRY)' 
+        DockerRepository: '$(IMAGE_REPOSITORY)'
+        DockerImageTag: '$(TAG)'
+
+- stage: DeployProdAWS
+  jobs: 
+  - job: ApproveRelease
+    timeoutInMinutes: 4320 # job times out in 3 days
+    pool: server
+    steps:
+    - task: ManualValidation@0
+      timeoutInMinutes: 1440 # task times out in 1 day
+      inputs:
+        notifyUsers: 'nana.janashia@nnsoftware.at'
+        instructions: 'Please validate and approve deployment to prod'
+  - job: DeployProd
+    steps:
+    - task: DownloadSecureFile@1
+      name: sshKey
+      inputs:
+        secureFile: 'adodemo-key.pem'
+    - script: |
+        sudo chmod 400 $(sshKey.secureFilePath)
+        ssh -o StrictHostKeyChecking=no -i $(sshKey.secureFilePath) ubuntu@35.180.100.164 "
+          docker ps -aq | xargs docker stop | xargs docker rm &&
+          docker run -d -p 8080:80 $(IMAGE_REPOSITORY)/$(IMAGE_REPOSITORY):$(TAG)"
